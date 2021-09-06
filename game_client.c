@@ -46,7 +46,6 @@ int main(int argc, char* argv[])
         printf(">>> ");
         // read from stdin to client_buf
         scanf("%s", client_buf);
-
         if ((res = send(clientsock, client_buf, BUF_SIZE, 0)) < 0)
         {// send request
             printf("Sending data to server failed");
