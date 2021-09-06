@@ -9,7 +9,7 @@
 
 #define BUF_SIZE 1024
 
-void checkHostEntry(struct hostent * hostentry);
+void get_host_ip(struct hostent * hostentry);
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
@@ -18,9 +18,9 @@ int main(int argc, char* argv[])
     struct sockaddr_in server;
     struct hostent *host;
     
-    // take computer as arg, convert to ip, pass ip below
+    // take computer as arg, convert to ip, pass ip to sockadd_in struct
     host = gethostbyname(argv[2]);
-    checkHostEntry(host);
+    get_host_ip(host);
     ip_buffer = inet_ntoa(*((struct in_addr*)host->h_addr_list[0]));
   
     // assign server address and port
@@ -29,26 +29,25 @@ int main(int argc, char* argv[])
     server.sin_port = htons(atoi(argv[3]));
 
     // create socket
-    clientsock = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientsock < 0) perror("Could not create socket");
+    if ((clientsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) perror("Could not create socket");
     printf("Socket created\n");
 
     // connect to remote server
-    res = connect(clientsock, (struct sockaddr *) &server, sizeof(server));
-    if (res == -1)
+    if ((res = connect(clientsock, (struct sockaddr *) &server, sizeof(server))) == -1)
     {
         printf("Connection failed\n");
         exit(1);
     }
 
+
     return 0;
 }
 
-void checkHostEntry(struct hostent * hostentry)
+void get_host_ip(struct hostent * hostentry)
 {
     if (hostentry == NULL)
     {
-        perror("gethostbyname");
+        perror("invalid hostname");
         exit(1);
     }
 }

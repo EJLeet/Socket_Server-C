@@ -12,22 +12,20 @@ int main(int argc, char* argv[])
     struct sockaddr_in server, client;
 
     // Create TCP socket
-    serversock = socket(AF_INET, SOCK_STREAM, 0);
-    if(serversock == -1)
+    if ((serversock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
         perror("ERROR! Creating socket failed\n");
         exit(1);
     }
     printf("Socket successfully created\n");
 
-    // Prepare the sockaddr_in structure
+    // Prepare the sockaddr_in struct
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(atoi(argv[1]));
 
     // Bind addr to socket
-    res = bind(serversock, (struct sockaddr *) &server, sizeof(server));
-    if(res < 0)
+    if ((res = bind(serversock, (struct sockaddr *) &server, sizeof(server))) < 0)
     {
         perror("ERROR! Bind failed\n");
         exit(1);
@@ -35,8 +33,7 @@ int main(int argc, char* argv[])
     printf("Bind was successfully completed\n");
 
     // Listen
-    res = listen(serversock, BACKLOG);
-    if(res != 0)
+    if ((res = listen(serversock, BACKLOG)) != 0)
     {
         perror("ERROR! Listen failed\n");
         exit(1);
@@ -45,10 +42,9 @@ int main(int argc, char* argv[])
 
     // Accept connection from client
     int clientlen = sizeof(client);
-    clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen);
-    if(clientsock < 0)
+    if ((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
     {
-        perror("ERROR! Accept failed");
+        perror("ERROR! Accept failed\n");
         exit(1);
     }
     else printf("Connection accepted\n");
