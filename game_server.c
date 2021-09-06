@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int /*port_number = atoi(argv[1]),*/ game_args = atoi(argv[2]), serversock, clientsock, res;
+    int game_args = atoi(argv[2]), serversock, clientsock, res;
     char *game_type = argv[3];
     struct sockaddr_in server, client;
 
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     serversock = socket(AF_INET, SOCK_STREAM, 0);
     if(serversock == -1)
     {
-        printf("Creating socket failed\n");
+        perror("ERROR! Creating socket failed\n");
         exit(1);
     }
     printf("Socket successfully created\n");
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     res = bind(serversock, (struct sockaddr *) &server, sizeof(server));
     if(res < 0)
     {
-        printf("Bind failed\n");
+        perror("ERROR! Bind failed\n");
         exit(1);
     }
     printf("Bind was successfully completed\n");
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     res = listen(serversock, BACKLOG);
     if(res != 0)
     {
-        printf("Listen failed\n");
+        perror("ERROR! Listen failed\n");
         exit(1);
     }
     printf("Waiting for incoming connections...\n");
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen);
     if(clientsock < 0)
     {
-        perror("Accept failed");
+        perror("ERROR! Accept failed");
         exit(1);
     }
     else printf("Connection accepted\n");
