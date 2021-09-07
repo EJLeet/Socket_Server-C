@@ -41,20 +41,20 @@ int main(int argc, char* argv[])
     
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
     printf("%s\n", server_reply);
+
     if (strcmp(server_reply, "Game is full") == 0)
-    {// disconnect client and exit
+    {// if game full disconnect client and exit
         printf("Terminating\n");
         close(clientsock);
         exit(1);
     }
     while (1)
-    {
+    {// client connected
         memset(client_buf, '\0', sizeof(client_buf));
         memset(server_reply, '\0', sizeof(server_reply));
         printf(">>> ");
-
-        // read from stdin to client_buf
-        scanf("%s", client_buf);
+        
+        scanf("%s", client_buf); // read command
         if ((res = send(clientsock, client_buf, BUF_SIZE, 0)) < 0)
         {// send request
             printf("Sending data to server failed");
