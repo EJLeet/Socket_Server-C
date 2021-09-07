@@ -34,7 +34,8 @@ int main(int argc, char* argv[])
     if ((clientsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) perror("Could not create socket");
 
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
-   
+
+
     if ((res = connect(clientsock, (struct sockaddr *) &server, sizeof(server))) == -1)
     {// connect to remote server
         printf("Connection failed\n");
