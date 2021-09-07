@@ -39,10 +39,13 @@ int main(int argc, char* argv[])
         printf("Connection failed\n");
         exit(1);
     }
+
     while (1)
     {
         memset(client_buf, '\0', sizeof(client_buf));
         memset(server_reply, '\0', sizeof(server_reply));
+        res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive welcome message from server
+        printf("%s\n", server_reply);
         printf(">>> ");
         // read from stdin to client_buf
         scanf("%s", client_buf);

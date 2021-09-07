@@ -10,8 +10,8 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int game_args = atoi(argv[2]), serversock, clientsock, res, read_size;
-    char *game_type = argv[3], client_buf[BUF_SIZE], server_reply[BUF_SIZE];
+    int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
+    char *game_type = argv[2], client_buf[BUF_SIZE], server_reply[BUF_SIZE];
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
 
@@ -45,12 +45,14 @@ int main(int argc, char* argv[])
     {// accept multiple connections
         // Accept connection from client
         int clientlen = sizeof(client);
-        if((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
-        {
-            perror("ERROR! Accept failed\n");
-            exit(1);
-        }
-        printf("Connection accepted\n");
+        
+            if((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
+            {
+                perror("ERROR! Accept failed\n");
+                exit(1);
+            }
+            printf("Connection accepted\n");
+        
         
         cpid = fork(); //create child process
         if (cpid < 0)
@@ -60,6 +62,8 @@ int main(int argc, char* argv[])
         }
         else if (cpid == 0)
         {// child process
+            char welcome[] = "Welcome to the game";
+            send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
             while(1)
             {
                 close(serversock); 
