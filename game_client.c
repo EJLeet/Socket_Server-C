@@ -40,9 +40,10 @@ int main(int argc, char* argv[])
     }
     
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
-    
+    printf("%s\n", server_reply);
     if (strcmp(server_reply, "Game is full") == 0)
     {// disconnect client and exit
+        printf("Terminating\n");
         close(clientsock);
         exit(1);
     }
