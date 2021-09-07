@@ -11,7 +11,8 @@
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
-    char *game_type = argv[2], client_buf[BUF_SIZE], server_reply[BUF_SIZE];
+    char *game_type = argv[2], client_buf[BUF_SIZE], server_reply[BUF_SIZE], 
+         welcome[] = "Welcome to the game", max_players[] = "Game is full", socket_created[] = "Socket created";
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
 
@@ -46,23 +47,27 @@ int main(int argc, char* argv[])
         // Accept connection from client
         int clientlen = sizeof(client);
         
-            if((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
-            {
-                perror("ERROR! Accept failed\n");
-                exit(1);
-            }
+        if (player_count++ >= atoi(argv[3])) send(clientsock, max_players, sizeof(max_players), 0); // send max players reached message
+
+        else if ((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
+        {
+            perror("ERROR! Accept failed");
+            exit(1);
+        }
+        else
+        {
             printf("Connection accepted\n");
-        
+            send(clientsock, socket_created, sizeof(socket_created), 0); // welcome each client to game
+        }
         
         cpid = fork(); //create child process
         if (cpid < 0)
         {// spawn failed
-            perror("ERROR! Fork failed\n");
+            perror("ERROR! Fork failed");
             exit(1);
         }
         else if (cpid == 0)
         {// child process
-            char welcome[] = "Welcome to the game";
             send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
             while(1)
             {
@@ -71,7 +76,7 @@ int main(int argc, char* argv[])
 
                 if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
                 {// Receive request
-                    perror("ERROR! Recv failed\n");
+                    perror("ERROR! Recv failed");
                     exit(1);
                 }
    
