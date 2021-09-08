@@ -38,19 +38,16 @@ int main(int argc, char* argv[])
         printf("Connection failed\n");
         exit(1);
     }
-    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); 
-    printf("%s\n", server_reply);
     
-    // this code is if command line arg is max people
-    // res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
-    // printf("%s\n", server_reply);
+    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
+    printf("%s\n", server_reply);
 
-    // if (strcmp(server_reply, "Game is full") == 0)
-    // {// if game full disconnect client and exit
-    //     printf("Terminating\n");
-    //     close(clientsock);
-    //     exit(1);
-    // }
+    if (strcmp(server_reply, "Game is full") == 0)
+    {// if game full disconnect client and exit
+        printf("Terminating\n");
+        close(clientsock);
+        exit(1);
+    }
 
     while (1)
     {// client connected

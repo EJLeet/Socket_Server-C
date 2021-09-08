@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
     char *game_type = argv[2], client_buf[BUF_SIZE], server_reply[BUF_SIZE], 
-         welcome[] = "Welcome to the game"/*, max_players[] = "Game is full"*/;
+         welcome[] = "Welcome to the game", max_players[] = "Game is full";
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
     struct Queue* child_pid = createQueue(); // queue to hold child pids
@@ -67,10 +67,16 @@ int main(int argc, char* argv[])
     {// accept multiple connections
         // Accept connection from client
         int clientlen = sizeof(client);
-        
-        // code for min people
-        if((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
-        {
+    
+        clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen);
+
+        if (player_count++ >= atoi(argv[3])) 
+        {// if max players tell client game is full
+            send(clientsock, max_players, sizeof(max_players), 0);
+            close(clientsock);
+        }
+        else if (clientsock < 0)
+        {// if cant create client exit
             perror("ERROR! Accept failed");
             exit(1);
         }
@@ -79,28 +85,7 @@ int main(int argc, char* argv[])
             printf("Connection accepted\n");
             send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
             cpid = fork(); //create child process
-            player_count++;
         }
-    
-        // this code if command line arg is max people
-        // clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen);
-
-        // if (player_count++ >= atoi(argv[3])) 
-        // {// if max players tell client game is full
-        //     send(clientsock, max_players, sizeof(max_players), 0);
-        //     close(clientsock);
-        // }
-        // else if (clientsock < 0)
-        // {// if cant create client exit
-        //     perror("ERROR! Accept failed");
-        //     exit(1);
-        // }
-        // else
-        // {// client accepted
-        //     printf("Connection accepted\n");
-        //     send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
-        //     cpid = fork(); //create child process
-        // }
         
         if (cpid < 0)
         {// spawn failed
