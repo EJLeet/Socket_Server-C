@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
             printf("Sending data to server failed");
             exit(1);
         }
+        
 
     }
     // close connection

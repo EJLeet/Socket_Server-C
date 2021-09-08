@@ -4,9 +4,20 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #define BACKLOG 10
 #define BUF_SIZE 1024
+
+void sig_handler_parent(int signum){
+  printf("Parent : Received a response signal from child \n");
+}
+
+void sig_handler_child(int signum){
+  printf("Child : Received a signal from parent \n");
+  sleep(1);
+  kill(getppid(),SIGUSR1);
+}
 
 // queue (implimented as Linked List) to handle child pids in order to see whose turn it is
 struct node { int item; struct node* next; };
@@ -99,6 +110,14 @@ int main(int argc, char* argv[])
                 close(serversock); 
                 memset(client_buf, '\0', BUF_SIZE);
 
+
+
+                signal(SIGUSR1,sig_handler_child); // Register signal handler
+                send(clientsock, welcome, sizeof(welcome), 0);
+                printf("Child: waiting for signal\n");
+
+
+
                 if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
                 {// Receive request
                     perror("ERROR! Recv failed");
@@ -116,6 +135,12 @@ int main(int argc, char* argv[])
             if (player_count >=2)
             {// if 2 people have joined start the game
                 player_count = atoi(argv[3]); // no players can join after game started
+                
+                signal(SIGUSR1,sig_handler_parent); // Register signal handler
+                sleep(1);
+                printf("Parent: sending signal to Child\n");
+                kill(child_pid->front->item,SIGUSR1);
+                printf("Parent: waiting for response\n");
 
             }
             else
