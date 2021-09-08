@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    
+
     while (1)
     {// client connected
         memset(client_buf, '\0', sizeof(client_buf));
@@ -67,6 +69,7 @@ int main(int argc, char* argv[])
     close(clientsock);
     return 0;
 }
+
 
 void get_host_ip(struct hostent * hostentry)
 {

@@ -19,8 +19,8 @@ void dequeue(struct Queue* q);
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
-    char *game_type = argv[2], client_buf[BUF_SIZE], server_reply[BUF_SIZE], 
-         welcome[] = "Welcome to the game", game_started[] = "Game has already started";
+    char *game_type = argv[2], client_buf[BUF_SIZE], welcome[] = "Welcome to the game", 
+         game_started[] = "Game has already started";
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
     struct Queue* child_pid = createQueue(); // queue to hold child pids
@@ -110,8 +110,8 @@ int main(int argc, char* argv[])
         else 
         {// parent process
             enqueue(child_pid, cpid); // add each child pid to queue
-            // printf("Queue Front : %d \n", child_pid->front->key);
-            // printf("Queue Rear : %d\n", child_pid->rear->key);
+            printf("Queue Front : %d \n", child_pid->front->key);
+            printf("Queue Rear : %d\n", child_pid->rear->key);
 
             if (player_count >=2)
             {// if 2 people have joined start the game
