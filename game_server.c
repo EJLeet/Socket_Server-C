@@ -8,34 +8,34 @@
 #define BACKLOG 10
 #define BUF_SIZE 1024
 
-// Queue (implimented as Linked List) to handle child pids in order to see whose turn it is
-struct QNode { int key; struct QNode* next; };
-struct Queue { struct QNode *front, *rear; };
-struct QNode* newNode(int k);
-struct Queue* createQueue();
-void enqueue(struct Queue* q, int k);
-void dequeue(struct Queue* q);
+// queue (implimented as Linked List) to handle child pids in order to see whose turn it is
+struct node { int item; struct node* next; };
+struct queue { struct node *front, *rear; };
+struct node* new_node(int i);
+struct queue* create_queue();
+void enqueue(struct queue* q, int i);
+void dequeue(struct queue* q);
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
     char *game_type = argv[2], client_buf[BUF_SIZE], welcome[] = "Welcome to the game", 
-         game_started[] = "Game has already started";
+          game_started[] = "Game has already started";
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
-    struct Queue* child_pid = createQueue(); // queue to hold child pids
+    struct queue* child_pid = create_queue(); // queue to hold child pids
 
-    // struct Queue* q = createQueue();
-    // enQueue(q, 10);
-    // enQueue(q, 20);
-    // deQueue(q);
-    // deQueue(q);
-    // enQueue(q, 30);
-    // enQueue(q, 40);
-    // enQueue(q, 50);
-    // deQueue(q);
-    // printf("Queue Front : %d \n", q->front->key);
-    // printf("Queue Rear : %d", q->rear->key);
+    // struct queue* q = create_queue();
+    // enqueue(q, 10);
+    // enqueue(q, 20);
+    // dequeue(q);
+    // dequeue(q);
+    // enqueue(q, 30);
+    // enqueue(q, 40);
+    // enqueue(q, 50);
+    // dequeue(q);
+    // printf("queue Front : %d \n", q->front->item);
+    // printf("queue Rear : %d", q->rear->item);
 
     if ((serversock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {// Create TCP socket
@@ -110,8 +110,8 @@ int main(int argc, char* argv[])
         else 
         {// parent process
             enqueue(child_pid, cpid); // add each child pid to queue
-            printf("Queue Front : %d \n", child_pid->front->key);
-            printf("Queue Rear : %d\n", child_pid->rear->key);
+            printf("queue Front : %d \n", child_pid->front->item);
+            printf("queue Rear : %d\n", child_pid->rear->item);
 
             if (player_count >=2)
             {// if 2 people have joined start the game
@@ -130,18 +130,18 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void dequeue(struct Queue* q)
+void dequeue(struct queue* q)
 {// pop first item from queue
     if (q->front == NULL) return;
-    struct QNode* temp = q->front; // assign head to temp
+    struct node* temp = q->front; // assign head to temp
     q->front = q->front->next; // assign head - 1 to head
     if (q->front == NULL) q->rear = NULL; // If front becomes NULL, then change rear to NULL
     free(temp); // free old head
 }
 
-void enqueue(struct Queue* q, int k)
-{// push k to queue
-    struct QNode* temp = newNode(k); // create new node
+void enqueue(struct queue* q, int i)
+{// push i to queue
+    struct node* temp = new_node(i); // create new node
     if (q->rear == NULL) 
     {// If queue is empty, then new node is front and rear both
         q->front = q->rear = temp;
@@ -151,17 +151,17 @@ void enqueue(struct Queue* q, int k)
     q->rear = temp;
 }
 
-struct Queue* createQueue()
+struct queue* create_queue()
 {// initialises empty queue
-    struct Queue* q = (struct Queue*)malloc(sizeof(struct Queue));
+    struct queue* q = (struct queue*)malloc(sizeof(struct queue));
     q->front = q->rear = NULL;
     return q;
 }
 
-struct QNode* newNode(int k)
+struct node* new_node(int i)
 {// creates a new node
-    struct QNode* temp = (struct QNode*)malloc(sizeof(struct QNode));
-    temp->key = k;
+    struct node* temp = (struct node*)malloc(sizeof(struct node));
+    temp->item = i;
     temp->next = NULL;
     return temp;
 }
