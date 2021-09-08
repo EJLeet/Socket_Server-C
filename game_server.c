@@ -1,52 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <unistd.h>
-#include <signal.h>
-
-#define BACKLOG 10
-#define BUF_SIZE 1024
-
-void sig_handler_parent(int signum){
-  printf("Parent : Received a response signal from child \n");
-}
-
-void sig_handler_child(int signum){
-  printf("Child : Received a signal from parent \n");
-  sleep(1);
-  kill(getppid(),SIGUSR1);
-}
-
-// queue (implimented as Linked List) to handle child pids in order to see whose turn it is
-struct node { int item; struct node* next; };
-struct queue { struct node *front, *rear; };
-struct node* new_node(int i);
-struct queue* create_queue();
-void enqueue(struct queue* q, int i);
-void dequeue(struct queue* q);
+#include "dependencies.h"
+#include "LL_queue.h"
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
-    char *game_type = argv[2], client_buf[BUF_SIZE], welcome[] = "Welcome to the game", 
-          game_started[] = "Game has already started";
+    char *game_type = argv[2], client_buf[BUF_SIZE];
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
     struct queue* child_pid = create_queue(); // queue to hold child pids
-
-    // struct queue* q = create_queue();
-    // enqueue(q, 10);
-    // enqueue(q, 20);
-    // dequeue(q);
-    // dequeue(q);
-    // enqueue(q, 30);
-    // enqueue(q, 40);
-    // enqueue(q, 50);
-    // dequeue(q);
-    // printf("queue Front : %d \n", q->front->item);
-    // printf("queue Rear : %d", q->rear->item);
 
     if ((serversock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {// Create TCP socket
@@ -83,7 +44,7 @@ int main(int argc, char* argv[])
 
         if (player_count++ >= atoi(argv[3])) 
         {// if max players tell client game is full
-            send(clientsock, game_started, sizeof(game_started), 0);
+            send(clientsock, "Game has already started", strlen("Game has already started"), 0);
             close(clientsock);
         }
         else if (clientsock < 0)
@@ -94,7 +55,7 @@ int main(int argc, char* argv[])
         else
         {// client accepted
             printf("Connection accepted\n");
-            send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
+            send(clientsock, "Welcome to the game", strlen("Welcome to the game"), 0); // welcome each client to game
             cpid = fork(); //create child process
         }
         
@@ -109,14 +70,6 @@ int main(int argc, char* argv[])
             {   
                 close(serversock); 
                 memset(client_buf, '\0', BUF_SIZE);
-
-
-
-                signal(SIGUSR1,sig_handler_child); // Register signal handler
-                send(clientsock, welcome, sizeof(welcome), 0);
-                printf("Child: waiting for signal\n");
-
-
 
                 if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
                 {// Receive request
@@ -136,11 +89,6 @@ int main(int argc, char* argv[])
             {// if 2 people have joined start the game
                 player_count = atoi(argv[3]); // no players can join after game started
                 
-                signal(SIGUSR1,sig_handler_parent); // Register signal handler
-                sleep(1);
-                printf("Parent: sending signal to Child\n");
-                kill(child_pid->front->item,SIGUSR1);
-                printf("Parent: waiting for response\n");
 
             }
             else
@@ -155,38 +103,3 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void dequeue(struct queue* q)
-{// pop first item from queue
-    if (q->front == NULL) return;
-    struct node* temp = q->front; // assign head to temp
-    q->front = q->front->next; // assign head - 1 to head
-    if (q->front == NULL) q->rear = NULL; // If front becomes NULL, then change rear to NULL
-    free(temp); // free old head
-}
-
-void enqueue(struct queue* q, int i)
-{// push i to queue
-    struct node* temp = new_node(i); // create new node
-    if (q->rear == NULL) 
-    {// If queue is empty, then new node is front and rear both
-        q->front = q->rear = temp;
-        return;
-    }
-    q->rear->next = temp; // Add the new node at the end of queue and change rear
-    q->rear = temp;
-}
-
-struct queue* create_queue()
-{// initialises empty queue
-    struct queue* q = (struct queue*)malloc(sizeof(struct queue));
-    q->front = q->rear = NULL;
-    return q;
-}
-
-struct node* new_node(int i)
-{// creates a new node
-    struct node* temp = (struct node*)malloc(sizeof(struct node));
-    temp->item = i;
-    temp->next = NULL;
-    return temp;
-}

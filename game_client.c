@@ -1,17 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-
-#define BUF_SIZE 1024
-
-void get_host_ip(struct hostent * hostentry);
+#include "dependencies.h"
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
@@ -49,8 +36,6 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    
-
     while (1)
     {// client connected
         memset(client_buf, '\0', sizeof(client_buf));
@@ -63,20 +48,8 @@ int main(int argc, char* argv[])
             printf("Sending data to server failed");
             exit(1);
         }
-        
-
     }
     // close connection
     close(clientsock);
     return 0;
-}
-
-
-void get_host_ip(struct hostent * hostentry)
-{
-    if (hostentry == NULL)
-    {
-        perror("invalid hostname");
-        exit(1);
-    }
 }
