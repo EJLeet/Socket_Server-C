@@ -3,9 +3,12 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
+    
+    //TODO make waiting screen until argv[3] people join
+    
     int serversock, clientsock, res, read_size, player_count = 0, message_id, temp;
     char client_buf[BUF_SIZE], welcome[] = "Welcome to the game", ftok_key[BUF_SIZE],
-         game_started[] = "Game has already started";
+         game_full[] = "Game is full";
     struct sockaddr_in server, client;
     struct queue* child_pid = create_queue(); // queue to hold child pids
     pid_t cpid; // child processes
@@ -51,18 +54,19 @@ int main(int argc, char* argv[])
 
         else if (player_count++ >= atoi(argv[3])) 
         {// if max players tell client game is full
-            send(clientsock, game_started, sizeof(game_started), 0);
+            send(clientsock, game_full, sizeof(game_full), 0);
             close(clientsock);
         }
-
-
+        
+        
+        
         else
         {// client accepted
             printf("Connection accepted\n");
             send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
             cpid = fork(); //create child process
         }
-        
+
         if (cpid < 0)
         {// spawn failed
             perror("ERROR! Fork failed");
@@ -86,6 +90,7 @@ int main(int argc, char* argv[])
 
         else 
         {// parent process
+                    
             enqueue(child_pid, cpid); // add each child pid to queue
             // printf("queue Front : %d \n", child_pid->front->item);
             // printf("queue Rear : %d\n", child_pid->rear->item);
@@ -94,10 +99,12 @@ int main(int argc, char* argv[])
             send(clientsock, ftok_key, sizeof(ftok_key), 0); // send child their pid
             memset(ftok_key, '\0', BUF_SIZE); // clear ftok_key char for next child
 
-            if (player_count >=2)
-            {// if 2 people have joined start the game
+            if (player_count == atoi(argv[3]))
+            {// if defined amount of people have joined start the game
                 for(;;)
                 {
+                    // as game if full, deny any user who wishes to join
+
                     key = ftok("message", 65); // generate unique key
                     message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue return identifier
                     message_queue.message_type = child_pid->front->item; // assign message type to whoever is at front of queue

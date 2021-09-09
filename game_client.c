@@ -27,19 +27,20 @@ int main(int argc, char* argv[])
         printf("Connection failed\n");
         exit(1);
     }
-    
+
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
     printf("%s\n", server_reply);
 
-    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive unique ftok_key (as pid)
-    unique_key = atoi(server_reply);
-
-    if (strcmp(server_reply, "Game has already started") == 0)
+    if (strcmp(server_reply, "Game is full") == 0)
     {// if game full disconnect client and exit
         printf("Terminating\n");
         close(clientsock);
         exit(1);
     }
+
+    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive unique ftok_key (as pid)
+    unique_key = atoi(server_reply);
+
 
     while (1)
     {// client connected
@@ -54,7 +55,7 @@ int main(int argc, char* argv[])
             message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue and return identifier
             msgrcv(message_id, &message_queue, sizeof(message_queue), unique_key, 0); // receive message
             if ((strncmp(message_queue.message_text, "TEXT", 5) == 0))
-                printf("Data Received is : %s \n", message_queue.message_text); // display the message
+                printf("Data Received is : %s length of message is : %ld \n", message_queue.message_text, strlen(message_queue.message_text)); // display the message
         
         }
 
