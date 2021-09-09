@@ -3,12 +3,13 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int serversock, clientsock, res, read_size, player_count = 0, player_number[atoi(argv[3])];
-    char *game_type = argv[2], client_buf[BUF_SIZE], welcome[] = "Welcome to the game", 
-          game_started[] = "Game has already started", ftok_key[BUF_SIZE];
+    int serversock, clientsock, res, read_size, player_count = 0, message_id, temp;
+    char client_buf[BUF_SIZE], welcome[] = "Welcome to the game", ftok_key[BUF_SIZE],
+         game_started[] = "Game has already started";
     struct sockaddr_in server, client;
-    pid_t cpid; // child processes
     struct queue* child_pid = create_queue(); // queue to hold child pids
+    pid_t cpid; // child processes
+    key_t key; // message queue
 
     if ((serversock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {// Create TCP socket
@@ -41,19 +42,19 @@ int main(int argc, char* argv[])
         // Accept connection from client
         int clientlen = sizeof(client);
     
-        clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen);
+        
+        if ((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
+        {// if cant create client exit
+            perror("ERROR! Accept failed");
+            exit(1);
+        }
 
-        if (player_count++ >= atoi(argv[3])) 
+        else if (player_count++ >= atoi(argv[3])) 
         {// if max players tell client game is full
             send(clientsock, game_started, sizeof(game_started), 0);
             close(clientsock);
         }
 
-        else if (clientsock < 0)
-        {// if cant create client exit
-            perror("ERROR! Accept failed");
-            exit(1);
-        }
 
         else
         {// client accepted
@@ -74,9 +75,6 @@ int main(int argc, char* argv[])
             {   
                 close(serversock); 
                 memset(client_buf, '\0', BUF_SIZE);
-
-                
-
                 if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
                 {// Receive request
                     perror("ERROR! Recv failed");
@@ -98,45 +96,22 @@ int main(int argc, char* argv[])
 
             if (player_count >=2)
             {// if 2 people have joined start the game
-                player_count = atoi(argv[3]); // no players can join after game started
-                
-                
-                // send message
-                // write test
                 for(;;)
                 {
-                    key_t key;
-                    int msgid;
-                
-                    // ftok to generate unique key
-                    key = ftok("message", 65);
-                
-                    // msgget creates a message queue
-                    // and returns identifier
-                    msgid = msgget(key, 0666 | IPC_CREAT);
-                    message.mesg_type = child_pid->front->item;
-                
+                    key = ftok("message", 65); // generate unique key
+                    message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue return identifier
+                    message_queue.message_type = child_pid->front->item; // assign message type to whoever is at front of queue
                     printf("Write Data : ");
-                    fgets(message.mesg_text,BUF_SIZE,stdin);
-                
-                    // msgsnd to send message
-                    msgsnd(msgid, &message, sizeof(message), 0);
-                
-                    // display the message
-                    printf("Data send is : %s \n", message.mesg_text);
+                    fgets(message_queue.message_text,BUF_SIZE,stdin); 
+                    msgsnd(message_id, &message_queue, sizeof(message_queue), 0); // msgsnd to send message
+                    printf("Data send is : %s \n", message_queue.message_text); // display the message
 
-                    // dequeue enqueue
                     // rotate through queue in parent sending child message based on their pid key
-                    int temp = child_pid->front->item; // get child pid before dequeue
+                    temp = child_pid->front->item; // get child pid before dequeue
                     dequeue(child_pid);
                     enqueue(child_pid, temp);
                 }
                 
-                
-
-
-
-
             }
             else
             {// game ends if < 2 people

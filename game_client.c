@@ -1,12 +1,13 @@
 #include "dependencies.h"
-#include "LL_queue.h"
+
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     char *game_type = argv[1], client_buf[BUF_SIZE], server_reply[BUF_SIZE], *ip_buffer;
-    int clientsock, res, unique_key;
+    int clientsock, res, unique_key, message_id;
     struct sockaddr_in server;
     struct hostent *host;
+    key_t key;
     
     // take computer as arg, convert to ip, pass ip to sockadd_in struct
     host = gethostbyname(argv[2]);
@@ -19,7 +20,7 @@ int main(int argc, char* argv[])
     server.sin_port = htons(atoi(argv[3]));
 
     // create socket
-    if ((clientsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) perror("Could not create socket");
+    if ((clientsock = socket(AF_INET, SOCK_STREAM, 0)) < 0) perror("ERROR! Could not create socket");
 
     if ((res = connect(clientsock, (struct sockaddr *) &server, sizeof(server))) == -1)
     {// connect to remote server
@@ -49,25 +50,12 @@ int main(int argc, char* argv[])
         // read test
         for(;;)
         {
-            key_t key;
-        int msgid;
-    
-        // ftok to generate unique key
-        key = ftok("message", 65);
-    
-        // msgget creates a message queue
-        // and returns identifier
-        msgid = msgget(key, 0666 | IPC_CREAT);
-    
-        // msgrcv to receive message
-        msgrcv(msgid, &message, sizeof(message), unique_key, 0);
-    
-        // display the message
-        printf("Data Received is : %s \n", 
-                        message.mesg_text);
-    
-        // to destroy the message queue
-        //msgctl(msgid, IPC_RMID, NULL);
+            key = ftok("message", 65); // generate unique key
+            message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue and return identifier
+            msgrcv(message_id, &message_queue, sizeof(message_queue), unique_key, 0); // receive message
+            if ((strncmp(message_queue.message_text, "TEXT", 5) == 0))
+                printf("Data Received is : %s \n", message_queue.message_text); // display the message
+        
         }
 
         printf(">>> ");

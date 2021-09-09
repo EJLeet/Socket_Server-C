@@ -23,9 +23,10 @@ void get_host_ip(struct hostent * hostentry)
     }
 }
 
-struct mesg_buffer {
-    long mesg_type;
-    char mesg_text[BUF_SIZE];
-} message;
+struct message_buffer 
+{
+    long long int message_type;
+    char message_text[BUF_SIZE];
+}   message_queue;
 
 #endif
