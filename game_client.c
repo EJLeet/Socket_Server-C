@@ -33,8 +33,6 @@ int main(int argc, char* argv[])
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive unique ftok_key (as pid)
     unique_key = atoi(server_reply);
 
-
-
     if (strcmp(server_reply, "Game has already started") == 0)
     {// if game full disconnect client and exit
         printf("Terminating\n");
@@ -48,14 +46,14 @@ int main(int argc, char* argv[])
         memset(server_reply, '\0', sizeof(server_reply));
 
     
-
-
         // read test
-        key_t key;
+        for(;;)
+        {
+            key_t key;
         int msgid;
     
         // ftok to generate unique key
-        key = ftok("message_queue", 65);
+        key = ftok("message", 65);
     
         // msgget creates a message queue
         // and returns identifier
@@ -69,9 +67,8 @@ int main(int argc, char* argv[])
                         message.mesg_text);
     
         // to destroy the message queue
-        msgctl(msgid, IPC_RMID, NULL);
-
-        
+        //msgctl(msgid, IPC_RMID, NULL);
+        }
 
         printf(">>> ");
         scanf("%s", client_buf); // read command
@@ -80,9 +77,6 @@ int main(int argc, char* argv[])
             printf("Sending data to server failed");
             exit(1);
         }
-
-        
-
         
     }
     // close connection
