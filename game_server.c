@@ -4,7 +4,8 @@
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     int game_args = atoi(argv[3]), serversock, clientsock, res, read_size, player_count = 0;
-    char *game_type = argv[2], client_buf[BUF_SIZE];
+    char *game_type = argv[2], client_buf[BUF_SIZE], welcome[] = "Welcome to the game", 
+          game_started[] = "Game has already started", ftok_key[BUF_SIZE];
     struct sockaddr_in server, client;
     pid_t cpid; // child processes
     struct queue* child_pid = create_queue(); // queue to hold child pids
@@ -44,19 +45,24 @@ int main(int argc, char* argv[])
 
         if (player_count++ >= atoi(argv[3])) 
         {// if max players tell client game is full
-            send(clientsock, "Game has already started", strlen("Game has already started"), 0);
+            send(clientsock, game_started, sizeof(game_started), 0);
             close(clientsock);
         }
+
         else if (clientsock < 0)
         {// if cant create client exit
             perror("ERROR! Accept failed");
             exit(1);
         }
+
         else
         {// client accepted
             printf("Connection accepted\n");
-            send(clientsock, "Welcome to the game", strlen("Welcome to the game"), 0); // welcome each client to game
+            send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
             cpid = fork(); //create child process
+            snprintf(ftok_key, BUF_SIZE, "%d", cpid); // convert cpid to string and save to char
+            send(clientsock, ftok_key, sizeof(ftok_key), 0); // send child their pid
+            memset(ftok_key, '\0', BUF_SIZE); // clear ftok_key char for next child
         }
         
         if (cpid < 0)
@@ -64,12 +70,15 @@ int main(int argc, char* argv[])
             perror("ERROR! Fork failed");
             exit(1);
         }
+
         else if (cpid == 0)
         {// child process
             while(1)
             {   
                 close(serversock); 
                 memset(client_buf, '\0', BUF_SIZE);
+
+                
 
                 if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
                 {// Receive request
@@ -79,6 +88,7 @@ int main(int argc, char* argv[])
    
             }
         }
+
         else 
         {// parent process
             enqueue(child_pid, cpid); // add each child pid to queue
@@ -89,6 +99,36 @@ int main(int argc, char* argv[])
             {// if 2 people have joined start the game
                 player_count = atoi(argv[3]); // no players can join after game started
                 
+                // rotate through queue in parent sending child message based on their pid key
+                int temp = child_pid->front->item; // get child pid before dequeue
+                // send message
+                // write test
+                key_t key;
+                int msgid;
+            
+                // ftok to generate unique key
+                key = ftok("message_queue", 65);
+            
+                // msgget creates a message queue
+                // and returns identifier
+                msgid = msgget(key, 0666 | IPC_CREAT);
+                message.mesg_type = temp;
+            
+                printf("Write Data : ");
+                fgets(message.mesg_text, BUF_SIZE, stdin);
+            
+                // msgsnd to send message
+                msgsnd(msgid, &message, sizeof(message), 0);
+            
+                // display the message
+                printf("Data send is : %s \n", message.mesg_text);
+                // dequeue enqueue
+                //dequeue(child_pid);
+                //enqueue(child_pid, temp);
+                
+
+
+
 
             }
             else

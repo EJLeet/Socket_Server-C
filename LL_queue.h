@@ -6,6 +6,21 @@ struct node { int item; struct node* next; };
 
 struct queue { struct node *front, *rear; };
 
+struct queue* create_queue()
+{// initialises empty queue
+    struct queue* q = (struct queue*)malloc(sizeof(struct queue));
+    q->front = q->rear = NULL;
+    return q;
+}
+
+struct node* new_node(int i)
+{// creates a new node
+    struct node* temp = (struct node*)malloc(sizeof(struct node));
+    temp->item = i;
+    temp->next = NULL;
+    return temp;
+}
+
 void dequeue(struct queue* q)
 {// pop first item from queue
     if (q->front == NULL) return;
@@ -25,21 +40,6 @@ void enqueue(struct queue* q, int i)
     }
     q->rear->next = temp; // Add the new node at the end of queue and change rear
     q->rear = temp;
-}
-
-struct queue* create_queue()
-{// initialises empty queue
-    struct queue* q = (struct queue*)malloc(sizeof(struct queue));
-    q->front = q->rear = NULL;
-    return q;
-}
-
-struct node* new_node(int i)
-{// creates a new node
-    struct node* temp = (struct node*)malloc(sizeof(struct node));
-    temp->item = i;
-    temp->next = NULL;
-    return temp;
 }
 
 #endif
