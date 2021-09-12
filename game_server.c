@@ -3,12 +3,8 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    
-    //TODO make waiting screen until argv[3] people join
-    
     int serversock, clientsock, res, read_size, player_count = 0, message_id, temp;
-    char client_buf[BUF_SIZE], welcome[] = "Welcome to the game", ftok_key[BUF_SIZE],
-         game_full[] = "Game is full";
+    char client_buf[BUF_SIZE], ftok_key[BUF_SIZE];
     struct sockaddr_in server, client;
     struct queue* child_pid = create_queue(); // queue to hold child pids
     pid_t cpid; // child processes
@@ -101,9 +97,8 @@ int main(int argc, char* argv[])
 
             if (player_count == atoi(argv[3]))
             {// if defined amount of people have joined start the game
-                for(;;)
+                while(1)
                 {
-                    // as game if full, deny any user who wishes to join
 
                     key = ftok("message", 65); // generate unique key
                     message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue return identifier

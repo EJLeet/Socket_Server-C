@@ -14,6 +14,8 @@
 #define BACKLOG 10
 #define BUF_SIZE 1024
 
+char welcome[] = "Welcome to the game", game_full[] = "Game is full";
+
 void get_host_ip(struct hostent * hostentry)
 {
     if (hostentry == NULL)

@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
     printf("%s\n", server_reply);
 
-    if (strcmp(server_reply, "Game is full") == 0)
+    if (strcmp(server_reply, game_full) == 0)
     {// if game full disconnect client and exit
         printf("Terminating\n");
         close(clientsock);
@@ -47,17 +47,30 @@ int main(int argc, char* argv[])
         memset(client_buf, '\0', sizeof(client_buf));
         memset(server_reply, '\0', sizeof(server_reply));
 
-    
         // read test
-        for(;;)
+        while(1)
         {
             key = ftok("message", 65); // generate unique key
             message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue and return identifier
             msgrcv(message_id, &message_queue, sizeof(message_queue), unique_key, 0); // receive message
-            if ((strncmp(message_queue.message_text, "TEXT", 5) == 0))
-                printf("Data Received is : %s length of message is : %ld \n", message_queue.message_text, strlen(message_queue.message_text)); // display the message
-        
-        }
+            
+            if (strncmp(message_queue.message_text, "TEXT", 4) == 0) printf("It is your turn\n");
+            
+            else if (strncmp(message_queue.message_text, "GO", 2) == 0) 
+            {
+
+            }
+            
+            else if (strncmp(message_queue.message_text, "END", 3) == 0)
+            {
+
+            } 
+           
+            else if (strncmp(message_queue.message_text, "ERROR", 5) == 0) 
+            {
+
+            }
+
 
         printf(">>> ");
         scanf("%s", client_buf); // read command
