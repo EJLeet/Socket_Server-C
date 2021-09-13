@@ -32,15 +32,9 @@ int main(int argc, char* argv[])
     printf("%s\n", server_reply); // print welcome message
     memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
 
-    recv(clientsock, server_reply, BUF_SIZE, 0); // receive queue position
-    queue_id = atoi(server_reply); // assign each client individual queue position
-    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
-
-    printf("queue id received is %d\n", queue_id);
-
     while(1)
     {
-        recv(queue_id, server_reply, BUF_SIZE, 0); 
+        recv(clientsock, server_reply, BUF_SIZE, 0); 
         printf("%s", server_reply);
     
     }

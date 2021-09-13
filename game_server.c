@@ -46,20 +46,15 @@ int main(int argc, char* argv[])
         }
         else printf("Connection accepted\n");
 
-        printf("client sock id is %d\n", clientsock);
-
         enqueue(game_order, clientsock); // add clients to queue with clientsock as their id
         send(clientsock, welcome, sizeof(welcome), 0); // send welcome message to clients
-        snprintf(queue_id, BUF_SIZE, "%d", clientsock); // convert clientsock to string to pass to client
-        send(clientsock, queue_id, sizeof(queue_id), 0); // send queue id to client 
 
-        printf("queue id sent to client is %d\n", clientsock);
     }
-    printf("outside loop\n");
-    printf("queue front item = %d\n", game_order->front->item);
+
     while (1)
     {
-        send(game_order->front->item, welcome, sizeof(welcome), 0);
+        clientsock = game_order->front->item;
+        send(clientsock, welcome, sizeof(welcome), 0);
     }
     // while (1)
     // {// loop to play the game
