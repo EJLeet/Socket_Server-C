@@ -4,7 +4,7 @@
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
     char *game_type = argv[1], client_buf[BUF_SIZE], server_reply[BUF_SIZE], *ip_buffer;
-    int clientsock, res, unique_key, message_id;
+    int clientsock, res, queue_id;
     struct sockaddr_in server;
     struct hostent *host;
     key_t key;
@@ -28,65 +28,36 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive either socket created or game full message
-    printf("%s\n", server_reply);
+    recv(clientsock, server_reply, BUF_SIZE, 0); // receive welcome message
+    printf("%s\n", server_reply); // print welcome message
+    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
 
-    if (strcmp(server_reply, game_full) == 0)
-    {// if game full disconnect client and exit
-        printf("Terminating\n");
-        close(clientsock);
-        exit(1);
+    recv(clientsock, server_reply, BUF_SIZE, 0); // receive queue position
+    queue_id = atoi(server_reply); // assign each client individual queue position
+    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
+
+    printf("queue id received is %d\n", queue_id);
+
+    while(1)
+    {
+        recv(queue_id, server_reply, BUF_SIZE, 0); 
+        printf("%s", server_reply);
+    
     }
+    // while(1)
+    // {// play the game
 
-    res = recv(clientsock, server_reply, BUF_SIZE - 1, 0); // receive unique ftok_key (as pid)
-    unique_key = atoi(server_reply);
+    //     recv(queue_id, server_reply, BUF_SIZE, 0); // receive it is your turn message
+    //     printf("%s", server_reply);
+    //     memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
+
+    //     recv(queue_id, server_reply, BUF_SIZE, 0); // receive go message
+    //     printf("%s", server_reply);
+    //     memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
+    // }
+
+    
 
 
-    while (1)
-    {// client connected
-        memset(client_buf, '\0', sizeof(client_buf));
-        memset(server_reply, '\0', sizeof(server_reply));
-
-        // read test
-        while(1)
-        {   
-            key = ftok("client", 65); // generate unique key for receiving instructions from server
-            message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue and return identifier
-            msgrcv(message_id, &message_queue, sizeof(message_queue), unique_key, 0); // receive message
-            
-
-            if (strncmp(message_queue.message_text, "TEXT", 4) == 0) printf("It is your turn\n");
-            
-            else if (strncmp(message_queue.message_text, "GO", 2) == 0) 
-            {// waits for user input for move
-                char score[BUF_SIZE];
-                printf("GO\nMOVE ");
-                fgets(score, BUF_SIZE, stdin);
-                printf("%s", score);
-                
-            }
-            
-            else if (strncmp(message_queue.message_text, "END", 3) == 0)
-            {
-
-            } 
-           
-            else if (strncmp(message_queue.message_text, "ERROR", 5) == 0) 
-            {
-
-            }
-
-        }
-        printf(">>> ");
-        scanf("%s", client_buf); // read command
-        if ((res = send(clientsock, client_buf, BUF_SIZE, 0)) < 0)
-        {// send request
-            printf("Sending data to server failed");
-            exit(1);
-        }
-        
-    }
-    // close connection
-    close(clientsock);
     return 0;
 }

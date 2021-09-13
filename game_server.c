@@ -3,12 +3,10 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int serversock, clientsock, res, read_size, player_count = 0, message_id, temp;
-    char client_buf[BUF_SIZE], ftok_key[BUF_SIZE];
+    int serversock, clientsock, res, player_count = 0;
+    char client_buf[BUF_SIZE];
     struct sockaddr_in server, client;
-    struct queue* child_pid = create_queue(); // queue to hold child pids
-    pid_t cpid; // child processes
-    key_t key; // message queue
+    struct queue* game_order = create_queue(); // queue to hold child pids
 
     if ((serversock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {// Create TCP socket
@@ -36,96 +34,40 @@ int main(int argc, char* argv[])
     }
     printf("Waiting for incoming connections...\n");
 
-    while(1)
-    {// accept multiple connections
+    while(player_count++ < atoi(argv[3]))
+    {// accept clients until player count is reached
         // Accept connection from client
         int clientlen = sizeof(client);
-    
-        
-        if ((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
-        {// if cant create client exit
-            perror("ERROR! Accept failed");
+        char queue_id[BUF_SIZE];
+        if((clientsock = accept(serversock, (struct sockaddr *) &client, &clientlen)) < 0)
+        {
+            perror("Accept failed");
             exit(1);
         }
+        else printf("Connection accepted\n");
 
-        else if (player_count++ >= atoi(argv[3])) 
-        {// if max players tell client game is full
-            send(clientsock, game_full, sizeof(game_full), 0);
-            close(clientsock);
-        }
-        
-        
-        
-        else
-        {// client accepted
-            printf("Connection accepted\n");
-            send(clientsock, welcome, sizeof(welcome), 0); // welcome each client to game
-            cpid = fork(); //create child process
-        }
+        printf("client sock id is %d\n", clientsock);
 
-        if (cpid < 0)
-        {// spawn failed
-            perror("ERROR! Fork failed");
-            exit(1);
-        }
+        enqueue(game_order, clientsock); // add clients to queue with clientsock as their id
+        send(clientsock, welcome, sizeof(welcome), 0); // send welcome message to clients
+        snprintf(queue_id, BUF_SIZE, "%d", clientsock); // convert clientsock to string to pass to client
+        send(clientsock, queue_id, sizeof(queue_id), 0); // send queue id to client 
 
-        else if (cpid == 0)
-        {// child process
-            while(1)
-            {   
-                close(serversock); 
-                memset(client_buf, '\0', BUF_SIZE);
-                if ((read_size = recv(clientsock, client_buf, BUF_SIZE, 0)) < 0)
-                {// Receive request
-                    perror("ERROR! Recv failed");
-                    exit(1);
-                }
-   
-            }
-        }
-
-        else 
-        {// parent process
-                    
-            enqueue(child_pid, cpid); // add each child pid to queue
-            // printf("queue Front : %d \n", child_pid->front->item);
-            // printf("queue Rear : %d\n", child_pid->rear->item);
-
-            snprintf(ftok_key, BUF_SIZE, "%d", cpid); // convert cpid to string and save to char
-            send(clientsock, ftok_key, sizeof(ftok_key), 0); // send child their pid
-            memset(ftok_key, '\0', BUF_SIZE); // clear ftok_key char for next child
-
-            if (player_count == atoi(argv[3]))
-            {// if defined amount of people have joined start the game
-                while(1)
-                {
-
-                    key = ftok("client", 65); // generate unique key for sending instructions to client
-                    message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue return identifier
-                    message_queue.message_type = child_pid->front->item; // assign message type to whoever is at front of queue
-                    strcpy(message_queue.message_text, "TEXT");
-                    msgsnd(message_id, &message_queue, sizeof(message_queue), 0); // msgsnd to send message
-                    strcpy(message_queue.message_text, "GO");
-                    msgsnd(message_id, &message_queue, sizeof(message_queue), 0); // msgsnd to send message
-                    
-                    
-                    break;
-
-                    // rotate through queue in parent sending child message based on their pid key
-                    // temp = child_pid->front->item; // get child pid before dequeue
-                    // dequeue(child_pid);
-                    // enqueue(child_pid, temp);
-                }
-                
-            }
-            else
-            {// game ends if < 2 people
-
-            }
-        }
+        printf("queue id sent to client is %d\n", clientsock);
     }
-    close(clientsock);
-    close(serversock);
+    printf("outside loop\n");
+    printf("queue front item = %d\n", game_order->front->item);
+    while (1)
+    {
+        send(game_order->front->item, welcome, sizeof(welcome), 0);
+    }
+    // while (1)
+    // {// loop to play the game
+    //     printf("front of queue %d", game_order->front->item);
+    //     send(game_order->front->item, "TEXT", strlen("TEXT"), 0);
+    //     send(game_order->front->item, "GO", strlen("GO"), 0);
+        
+    // }
 
     return 0;
 }
