@@ -100,18 +100,21 @@ int main(int argc, char* argv[])
                 while(1)
                 {
 
-                    key = ftok("message", 65); // generate unique key
+                    key = ftok("client", 65); // generate unique key for sending instructions to client
                     message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue return identifier
                     message_queue.message_type = child_pid->front->item; // assign message type to whoever is at front of queue
-                    printf("Write Data : ");
-                    fgets(message_queue.message_text,BUF_SIZE,stdin); 
+                    strcpy(message_queue.message_text, "TEXT");
                     msgsnd(message_id, &message_queue, sizeof(message_queue), 0); // msgsnd to send message
-                    printf("Data send is : %s \n", message_queue.message_text); // display the message
+                    strcpy(message_queue.message_text, "GO");
+                    msgsnd(message_id, &message_queue, sizeof(message_queue), 0); // msgsnd to send message
+                    
+                    
+                    break;
 
                     // rotate through queue in parent sending child message based on their pid key
-                    temp = child_pid->front->item; // get child pid before dequeue
-                    dequeue(child_pid);
-                    enqueue(child_pid, temp);
+                    // temp = child_pid->front->item; // get child pid before dequeue
+                    // dequeue(child_pid);
+                    // enqueue(child_pid, temp);
                 }
                 
             }

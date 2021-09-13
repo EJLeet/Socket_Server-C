@@ -49,16 +49,21 @@ int main(int argc, char* argv[])
 
         // read test
         while(1)
-        {
-            key = ftok("message", 65); // generate unique key
+        {   
+            key = ftok("client", 65); // generate unique key for receiving instructions from server
             message_id = msgget(key, 0666 | IPC_CREAT); // create a message queue and return identifier
             msgrcv(message_id, &message_queue, sizeof(message_queue), unique_key, 0); // receive message
             
+
             if (strncmp(message_queue.message_text, "TEXT", 4) == 0) printf("It is your turn\n");
             
             else if (strncmp(message_queue.message_text, "GO", 2) == 0) 
-            {
-
+            {// waits for user input for move
+                char score[BUF_SIZE];
+                printf("GO\nMOVE ");
+                fgets(score, BUF_SIZE, stdin);
+                printf("%s", score);
+                
             }
             
             else if (strncmp(message_queue.message_text, "END", 3) == 0)
@@ -71,7 +76,7 @@ int main(int argc, char* argv[])
 
             }
 
-
+        }
         printf(">>> ");
         scanf("%s", client_buf); // read command
         if ((res = send(clientsock, client_buf, BUF_SIZE, 0)) < 0)
