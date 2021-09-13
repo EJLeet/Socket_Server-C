@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int serversock, clientsock, res, player_count = 0;
-    char client_buf[BUF_SIZE];
+    int serversock, clientsock, res, player_count = 0, score = 0;
+    char client_buf[BUF_SIZE], welcome[] = "Welcome to the game";
     struct sockaddr_in server, client;
     struct queue* game_order = create_queue(); // queue to hold child pids
 
@@ -52,18 +52,21 @@ int main(int argc, char* argv[])
     }
 
     while (1)
-    {
-        clientsock = game_order->front->item;
-        send(clientsock, welcome, sizeof(welcome), 0);
+    {// loop to play the game
+        memset(client_buf, '\0', sizeof(client_buf)); // clear client buffer    
+        clientsock = game_order->front->item; // get client from fron of queue - its their turn
+        char sum[BUF_SIZE] = "Sum is "; // sum to send to client
+        char score_char[BUF_SIZE]; // setup score char to strncat to sum[]
+        snprintf(score_char, BUF_SIZE, "%d", score); // convert score to char
+        strncat(sum, score_char, sizeof(score_char)); // concat score to sum
+        send(clientsock, sum, sizeof(sum), 0); // send sum is x to client
+        sleep (0.5); // sleep to deal with any latency
+        send(clientsock, "GO", strlen("GO"), 0); // send go to client
+        recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
+        score += atoi(client_buf); // increment score
+        dequeue(game_order); // dequeue
+        enqueue(game_order, clientsock); // enqueue
     }
-    // while (1)
-    // {// loop to play the game
-    //     printf("front of queue %d", game_order->front->item);
-    //     send(game_order->front->item, "TEXT", strlen("TEXT"), 0);
-    //     send(game_order->front->item, "GO", strlen("GO"), 0);
-        
-    // }
-
     return 0;
 }
 
