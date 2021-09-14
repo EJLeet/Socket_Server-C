@@ -40,9 +40,12 @@ int main(int argc, char* argv[])
         recv(clientsock, server_reply, BUF_SIZE, 0); // receive go command
         if (strncmp(server_reply, "GO", 2) == 0)
         {// client to make a move
+            char move[BUF_SIZE] = "MOVE ";
             printf("Enter a number: ");
             fgets(client_buf, sizeof(client_buf), stdin); // read in move
-            send(clientsock, client_buf, sizeof(client_buf), 0); // send move to server
+            strtok(client_buf, "\n"); // remove new line char
+            strcat(move, client_buf); // concat move to move
+            send(clientsock, move, sizeof(move), 0); // send move to server
         }
 
         

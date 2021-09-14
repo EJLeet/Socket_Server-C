@@ -63,7 +63,19 @@ int main(int argc, char* argv[])
         sleep (0.5); // sleep to deal with any latency
         send(clientsock, "GO", strlen("GO"), 0); // send go to client
         recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
-        score += atoi(client_buf); // increment score
+        
+        if (strncmp(client_buf, "MOVE ", 5) == 0)
+        {// calculate score
+            char temp[BUF_SIZE]; // used to strtok
+            strcpy(temp, client_buf);
+            char *token = strtok(temp, "MOVE "); // strtok number entered after move
+            if (strlen(client_buf) > 6 || atoi(token) <= 0) 
+            {// invalid move - letter, number <= 0 or invalid command entered
+                printf("error\n");
+            }
+            else score += atoi(token); // increment score
+        }
+        
         dequeue(game_order); // dequeue
         enqueue(game_order, clientsock); // enqueue
     }
