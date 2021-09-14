@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
         send(clientsock, "GO", strlen("GO"), 0); // send go to client
         recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
         
+        // TODO add capital commands to dependencies
+
         if (strncmp(client_buf, "MOVE ", 5) == 0)
         {// calculate score
             char temp[BUF_SIZE]; // used to strtok
@@ -74,6 +76,8 @@ int main(int argc, char* argv[])
                 printf("error\n");
             }
             else score += atoi(token); // increment score
+            
+            // TODO end game when score above 30
         }
         
         dequeue(game_order); // dequeue
