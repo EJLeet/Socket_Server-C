@@ -1,4 +1,4 @@
-#include "dependencies.h"
+#include "client_includes.h"
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
