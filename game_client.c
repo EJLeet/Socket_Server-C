@@ -16,7 +16,6 @@ int main(int argc, char* argv[])
         {// cliebt received text
             char *temp = server_reply;
             while (*temp != 0 && *(temp++) != ' ') {} // temp = everything after "TEXT "
-            
             if (strncmp(temp, "You", 3) == 0) printf("%s", temp); // game ended dont print newline
             else printf("%s\n", temp); // not game ended message - newline needed
         }
@@ -53,14 +52,8 @@ int main(int argc, char* argv[])
             }
         }
 
-        else if (strcmp(server_reply, "END") == 0)
-        {// client received end message, quit
-            printf("%s\n", server_reply);
-            close(clientsock); // terminate connection
-            exit(1);
-        }
         else
-        {// ERROR / protocol error
+        {// ERROR / protocol error / END
             printf("%s\n", server_reply);
             close(clientsock); // terminate connection
             exit(1);

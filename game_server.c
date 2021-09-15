@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int serversock, clientsock, player_count = 0, score = 0, ret, error_count = 0;;
+    int serversock, clientsock, player_count = 0, score = 0, ret, error_count = 0;
     char client_buf[BUF_SIZE];
     struct queue* game_order = create_queue();// queue to hold child pids
     struct pollfd fd; // used for receive timeout
@@ -25,19 +25,32 @@ int main(int argc, char* argv[])
         clientsock = game_order->front->item; // get client from fron of queue - its their turn
 
         if (score >= 30)
-        {// send you lost message
+        {// loop through all losing clients
             strcat(text, "You Lost!");
-            send(clientsock, text, sizeof(text), 0);
+            for (int i = 0; i < 2; i++)
+            {// send you lost message
+                send(clientsock, text, sizeof(text), 0);
+                close(clientsock); // terminate client connection
+                dequeue(game_order);
+                clientsock = game_order->front->item;
+            }
+            close(serversock);
+            exit(1);
+        }
+
+        if (player_count == 2)
+        {// one player left - they won
+            strcat(text, "You won!");
+            send(clientsock, text, sizeof(text), 0); // send winner you won
             close(clientsock); // terminate client connection
-            close(serversock); // teminate server connection
-            exit(1); // game over
+            close(serversock);
+            exit(1);
         }
 
         snprintf(score_char, BUF_SIZE, "%d", score); // convert score to char
         strncat(sum, score_char, sizeof(score_char)); // concat score to sum
         send(clientsock, sum, sizeof(sum), 0); // send sum is x to client
         sleep (0.5); // sleep to deal with any latency
-
         send(clientsock, "GO", strlen("GO"), 0); // send go to client
 
         fd.fd = clientsock; // setup poll to record time
@@ -74,8 +87,6 @@ int main(int argc, char* argv[])
                 }
             }
 
-            // TODO end game when score above 30
-
             else 
             {// valid move
                 dequeue(game_order); // next players turn
@@ -95,7 +106,9 @@ int main(int argc, char* argv[])
 
         else if (strcmp(client_buf, "QUIT") == 0)
         {// client wants to quit, send end 
+            player_count--;
             send(clientsock, "END", strlen("END"), 0);
+            dequeue(game_order); // next players turn
             close(clientsock); // terminate client connection
         }
 
