@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     }
 
     while (1)
-    {                                                             // loop to play the game
+    { // loop to play the game
         char sum[BUF_SIZE] = "Sum is ", text[BUF_SIZE] = "TEXT "; // initiliase client messages
         char score_char[BUF_SIZE];                                // setup score char to strncat to sum[]
         memset(client_buf, '\0', sizeof(client_buf));             // clear client buffer
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         // TODO add capital commands to dependencies
 
         if (strncmp(client_buf, move, 5) == 0)
-        {                        // calculate score and handle invalid commands
+        { // calculate score and handle invalid commands
             char temp[BUF_SIZE]; // used to strtok
             strcpy(temp, client_buf);
             char *token = strtok(temp, move); // strtok number entered after move
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             }
 
             else
-            {                         // valid move
+            { // valid move
                 dequeue(game_order);  // next players turn
                 enqueue(game_order, clientsock);
                 score += atoi(token); // increment score

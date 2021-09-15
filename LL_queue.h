@@ -35,7 +35,7 @@ void dequeue(struct queue *q)
 }
 
 void enqueue(struct queue *q, int i)
-{                                    // push i to queue
+{ // push i to queue
     struct node *temp = new_node(i); // create new node
     if (q->rear == NULL)
     { // If queue is empty, then new node is front and rear both

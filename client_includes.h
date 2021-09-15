@@ -13,9 +13,9 @@
 
 void get_host_ip(struct hostent *hostentry);
 int client_setup(char *host_name, int portnum);
+void display_message(int clientsock, char server_reply[BUF_SIZE]);
 
 char text[] = "TEXT ", go[] = "GO", quit[] = "QUIT";
-
 
 void get_host_ip(struct hostent *hostentry)
 { // use hostname to get ip address
@@ -59,12 +59,17 @@ int client_setup(char *host_name, int portnum)
         exit(1);
     }
 
-    recv(client_id, server_reply, BUF_SIZE, 0); // receive welcome message
-    printf("%s\n", server_reply);               // print welcome message
+    display_message(client_id, server_reply); // receive welcome message
 
     memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
 
     return client_id;
+}
+
+void display_message(int clientsock, char server_reply[BUF_SIZE])
+{ // recieve and display message sent by client
+    recv(clientsock, server_reply, BUF_SIZE, 0);
+    printf("%s\n", server_reply);               
 }
 
 #endif
