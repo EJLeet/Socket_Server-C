@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <poll.h>
 
 #define BUF_SIZE 1024
 #define BACKLOG 10
@@ -68,5 +69,8 @@ int accept_clients(int serversock)
     send(client_id, welcome, sizeof(welcome), 0); // send welcome message to clients
     return client_id;
 }
+
+
+
 
 #endif
