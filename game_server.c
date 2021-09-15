@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
         if (score >= 30)
         {// loop through all losing clients
             strcat(text, "You Lost!");
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < player_count - 2; i++)
             {// send you lost message
                 send(clientsock, text, sizeof(text), 0);
                 close(clientsock); // terminate client connection
