@@ -34,18 +34,23 @@ int main(int argc, char* argv[])
         // TODO add capital commands to dependencies
 
         if (strncmp(client_buf, "MOVE ", 5) == 0)
-        {// calculate score
+        {// calculate score and handle invalid commands
             char temp[BUF_SIZE]; // used to strtok
             strcpy(temp, client_buf);
             char *token = strtok(temp, "MOVE "); // strtok number entered after move
             
             if (strlen(client_buf) > 6 || atoi(token) <= 0) 
-            {// invalid move - letter, number <= 0 or invalid command entered
+            {// invalid move - letter, number <= 0 or > 9 or invalid command entered
                 printf("error\n");
             }
             else score += atoi(token); // increment score
             
             // TODO end game when score above 30
+        }
+        else if (strcmp(client_buf, "QUIT") == 0)
+        {// client wants to quit, send end 
+            send(clientsock, "END", strlen("END"), 0);
+            close(clientsock); // terminate client connection
         }
         
         dequeue(game_order); // dequeue

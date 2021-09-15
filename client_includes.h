@@ -7,10 +7,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #define BUF_SIZE 1024
 
-void get_host_ip(struct hostent * hostentry)
+void get_host_ip(struct hostent *hostentry)
 {// use hostname to get ip address
     if (hostentry == NULL)
     {
