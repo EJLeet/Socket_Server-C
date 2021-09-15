@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[])
 {// read in command line arguements as game parameters
-    int serversock, clientsock, player_count = 0, score = 0, ret, error_count = 0;
+    int serversock, clientsock, player_count = 0, score = 0, ret, error_count = 0;;
     char client_buf[BUF_SIZE];
     struct queue* game_order = create_queue();// queue to hold child pids
     struct pollfd fd; // used for receive timeout
@@ -23,6 +23,15 @@ int main(int argc, char* argv[])
         char score_char[BUF_SIZE]; // setup score char to strncat to sum[]
         memset(client_buf, '\0', sizeof(client_buf)); // clear client buffer    
         clientsock = game_order->front->item; // get client from fron of queue - its their turn
+
+        if (score >= 30)
+        {// send you lost message
+            strcat(text, "You Lost!");
+            send(clientsock, text, sizeof(text), 0);
+            close(clientsock); // terminate client connection
+            close(serversock); // teminate server connection
+            exit(1); // game over
+        }
 
         snprintf(score_char, BUF_SIZE, "%d", score); // convert score to char
         strncat(sum, score_char, sizeof(score_char)); // concat score to sum
@@ -57,6 +66,7 @@ int main(int argc, char* argv[])
                 strcat(text, "ERROR: Invalid Command");
                 send(clientsock, text, sizeof(text), 0); // send error message to client
                 error_count++;
+
                 if (error_count == 5)
                 {// disconnect client
                     send(clientsock, "END", strlen("END"), 0);
@@ -71,11 +81,26 @@ int main(int argc, char* argv[])
                 dequeue(game_order); // next players turn
                 enqueue(game_order, clientsock); 
                 score += atoi(token); // increment score
+                error_count = 0; // reset error count after valid move
+
+                if (score >= 30)
+                {// Game has been won
+                    strcat(text, "You won!");
+                    send(clientsock, text, sizeof(text), 0); // send winner you won
+                    close(clientsock); // terminate client connection
+                }
             }
             
         }
+
         else if (strcmp(client_buf, "QUIT") == 0)
         {// client wants to quit, send end 
+            send(clientsock, "END", strlen("END"), 0);
+            close(clientsock); // terminate client connection
+        }
+
+        else
+        {// ERROR / protocol error
             send(clientsock, "END", strlen("END"), 0);
             close(clientsock); // terminate client connection
         }
