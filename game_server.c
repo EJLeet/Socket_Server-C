@@ -67,15 +67,13 @@ int main(int argc, char *argv[])
         // received message within time
         else recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
 
-        // TODO add capital commands to dependencies
-
         if (strncmp(client_buf, move, 5) == 0)
         { // calculate score and handle invalid commands
             char temp[BUF_SIZE]; // used to strtok
             strcpy(temp, client_buf);
             char *token = strtok(temp, move); // strtok number entered after move
 
-            if (strlen(client_buf) > 6 || atoi(token) <= 0)
+            if (strcmp(client_buf, "MOVE  ") == 0 || strlen(client_buf) > 6 || atoi(token) <= 0)
             { // invalid move - letter, number <= 0 or > 9 or invalid command entered
                 strcat(text, "ERROR: Invalid Command");
                 send(clientsock, text, sizeof(text), 0); // send error message to client

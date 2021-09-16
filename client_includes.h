@@ -61,7 +61,11 @@ int client_setup(char *host_name, int portnum)
 
     display_message(client_id, server_reply); // receive welcome message
 
-    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message
+    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message               
+
+    display_message(client_id, server_reply); // receive game overview
+
+    memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message               
 
     return client_id;
 }
@@ -69,7 +73,7 @@ int client_setup(char *host_name, int portnum)
 void display_message(int clientsock, char server_reply[BUF_SIZE])
 { // recieve and display message sent by client
     recv(clientsock, server_reply, BUF_SIZE, 0);
-    printf("%s\n", server_reply);               
+    printf("%s\n", server_reply);
 }
 
 #endif

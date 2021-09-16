@@ -16,7 +16,17 @@ int server_setup(int portnum, int backlog);
 int accept_clients(int serversock);
 
 char lose_message[] = "You Lost!", win_message[] = "You Won!",
-     end[] = "END", move[] = "MOVE ", go[] = "GO", quit[] = "QUIT";
+     end[] = "END", move[] = "MOVE ", go[] = "GO", quit[] = "QUIT",
+     game_overview[] = 
+
+"\nGAME OVERVIEW AND RULES\n\n\
+You are playing against other players. The aim is to reach 30 first.\n\
+A minimum of two players are required to play the game.\n\
+Once two players have joined the game will start.\n\
+You may enter a single integer between 1 and 9 to make a valid move.\n\
+You may type 'quit' at any time to leave the game.\n\
+All other input will be classified as invalid.\n\
+Upon 5 consecutive invalid inputs you will be disconnected.\n";
 
 int server_setup(int portnum, int backlog)
 { /*
@@ -79,7 +89,11 @@ int accept_clients(int serversock)
 
     else printf("Connection accepted\n");
 
-    send(client_id, welcome, sizeof(welcome), 0); // send welcome message to clients
+    send(client_id, welcome, sizeof(welcome), 0);             // send welcome message to clients
+
+    sleep(0.5);                                               // deal with any latency before sending next message
+
+    send(client_id, game_overview, sizeof(game_overview), 0); // send game overview to clients
 
     return client_id;
 }

@@ -1,2 +1,4 @@
 client
 server
+game_client.o
+game_server.o
