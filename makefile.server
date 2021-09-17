@@ -6,5 +6,5 @@ OBJ = game_server.o 								 	# source directory
 %.o: %.c $(DEPS) 										# create .o files after compiling .c and .h files
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-server: $(OBJ) 											# create out file
+game_server: $(OBJ) 											# create out file
 	$(CC) -o $@ $^ $(CFLAGS) 

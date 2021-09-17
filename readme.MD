@@ -42,7 +42,7 @@ Run Time
 
         As such, the server can be run in the following way:
 
-        ./server <port number> <game type> <max players>
+        ./game_server <port number> <game type> <max players>
 
     Client
 
@@ -52,7 +52,7 @@ Run Time
 
         As such, the client/s can be run in the following way:
 
-        ./client <game type> <host name> <port number>
+        ./game_client <game type> <host name> <port number>
     
     Argument Description
     

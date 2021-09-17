@@ -1,4 +1,5 @@
-client
-server
+game_client
+game_server
 game_client.o
 game_server.o
+report.pages
