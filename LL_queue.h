@@ -29,7 +29,7 @@ void dequeue(struct queue *q)
 { // pop first item from queue
     if (q->front == NULL) return;
     struct node *temp = q->front;         // assign head to temp
-    q->front = q->front->next;            // assign head - 1 to head
+    q->front = q->front->next;            // assign head to second item in queue
     if (q->front == NULL) q->rear = NULL; // If front becomes NULL, then change rear to NULL
     free(temp);                           // free old head
 }

@@ -77,7 +77,7 @@ int accept_clients(int serversock)
                                                     */
     int client_id;
     struct sockaddr_in client;
-    char welcome[] = "Welcome to the game", queue_id[BUF_SIZE];
+    char welcome[] = "Welcome to the game";
     // Accept connection from client
     int clientlen = sizeof(client);
 
