@@ -7,6 +7,8 @@ int main(int argc, char *argv[])
 
     clientsock = client_setup(argv[2], atoi(argv[3])); // connect client to server
 
+    for (int i = 0; i < 5; i++) display_message(clientsock, server_reply); // receive countdown message     
+
     while (1)
     { // loop to play the game
         memset(server_reply, '\0', sizeof(server_reply)); // clear server reply buffer for next message

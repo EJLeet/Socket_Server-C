@@ -16,6 +16,21 @@ int main(int argc, char *argv[])
         enqueue(game_order, clientsock); // add clients to queue with clientsock as their id
     }
 
+    for (int i = 5; i > 0; i--)
+    { // send 5 second countdown message
+        for (int j = 0; j < player_count - 1; j++)
+        { // send to each client
+            char counter[BUF_SIZE], game_starting[BUF_SIZE] = "Game will start in ";
+            snprintf(counter, BUF_SIZE, "%d...", i);                   // convert counter to char
+            strcat(game_starting, counter);                            // concat game starting and counter
+            clientsock = game_order->front->item;
+            send(clientsock, game_starting, sizeof(game_starting), 0); // send game starting
+            dequeue(game_order);
+            enqueue(game_order, clientsock);                 
+        }
+        sleep(1);
+    }
+
     while (1)
     { // loop to play the game
         char sum[BUF_SIZE] = "Sum is ", text[BUF_SIZE] = "TEXT "; // initiliase client messages
