@@ -79,52 +79,54 @@ int main(int argc, char *argv[])
             close(clientsock); // terminate client connection
         }
 
-        // received message within time
-        else recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
+        else
+        { // received message within time
+            recv(clientsock, client_buf, BUF_SIZE, 0); // wait to receive message
 
-        if (strncmp(client_buf, move, 5) == 0)
-        { // calculate score and handle invalid commands
-            char temp[BUF_SIZE]; // used to strtok
-            strcpy(temp, client_buf);
-            char *token = strtok(temp, move); // strtok number entered after move
+            if (strncmp(client_buf, move, 5) == 0)
+            { // calculate score and handle invalid commands
+                char temp[BUF_SIZE]; // used to strtok
+                strcpy(temp, client_buf);
+                char *token = strtok(temp, move); // strtok number entered after move
 
-            if (strcmp(client_buf, "MOVE  ") == 0 || strlen(client_buf) > 6 || atoi(token) <= 0)
-            { // invalid move - letter, number <= 0 or > 9 or invalid command entered
-                strcat(text, "ERROR: Invalid Command");
-                send(clientsock, text, sizeof(text), 0); // send error message to client
-                error_count++;
+                if (strcmp(client_buf, "MOVE  ") == 0 || strlen(client_buf) > 6 || atoi(token) <= 0)
+                { // invalid move - letter, number <= 0 or > 9 or invalid command entered
+                    strcat(text, "ERROR: Invalid Command");
+                    send(clientsock, text, sizeof(text), 0); // send error message to client
+                    error_count++;
 
-                if (error_count == 5)
-                { // disconnect client
-                    send(clientsock, end, sizeof(end), 0);
-                    dequeue(game_order);
-                    close(clientsock); // terminate client connection
-                    player_count--;
+                    if (error_count == 5)
+                    { // disconnect client
+                        send(clientsock, end, sizeof(end), 0);
+                        dequeue(game_order);
+                        close(clientsock); // terminate client connection
+                        player_count--;
+                    }
+                }
+
+                else
+                { // valid move
+                    dequeue(game_order);  // next players turn
+                    enqueue(game_order, clientsock);
+                    score += atoi(token); // increment score
+                    error_count = 0;      // reset error count after valid move
+
+                    if (score >= 30)
+                    { // Game has been won
+                        strcat(text, win_message);
+                        send(clientsock, text, sizeof(text), 0); // send winner you won
+                        close(clientsock);                       // terminate client connection
+                    }
                 }
             }
 
             else
-            { // valid move
-                dequeue(game_order);  // next players turn
-                enqueue(game_order, clientsock);
-                score += atoi(token); // increment score
-                error_count = 0;      // reset error count after valid move
-
-                if (score >= 30)
-                { // Game has been won
-                    strcat(text, win_message);
-                    send(clientsock, text, sizeof(text), 0); // send winner you won
-                    close(clientsock);                       // terminate client connection
-                }
+            { // ERROR / protocol error / QUIT
+                player_count--;
+                send(clientsock, end, sizeof(end), 0);
+                dequeue(game_order); // next players turn
+                close(clientsock);   // terminate client connection
             }
-        }
-
-        else
-        { // ERROR / protocol error / QUIT
-            player_count--;
-            send(clientsock, end, sizeof(end), 0);
-            dequeue(game_order); // next players turn
-            close(clientsock);   // terminate client connection
         }
     }
     return 0;
